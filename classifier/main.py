@@ -46,3 +46,28 @@ print(W2)
 
 print("\n--- b2 ---")
 print(b2)
+# forward pass
+z1 = x_train_tensor @ W1 + b1
+
+print(z1.shape)
+
+a1 = torch.relu(z1)
+
+z2 = a1 @ W2 +b2
+
+y_hat = torch.sigmoid(z2)
+# compute bce loss
+log_y_hat = torch.log(y_hat)
+log_one_minus_y_hat = torch.log(1 - y_hat)
+
+
+term1 = y_train * log_y_hat
+term2 = (1 - y_train) * log_one_minus_y_hat
+
+bce_per_sample = -(term1 + term2)
+
+print("bce_per_sample.shape:", bce_per_sample.shape)
+
+
+loss = torch.mean(bce_per_sample)
+print("Final loss:", loss.item())
