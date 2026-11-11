@@ -35,39 +35,52 @@ b1 = torch.zeros(8)
 W2 = torch.randn(8, 1) * 0.01
 b2 = torch.zeros(1)
 
-print("--- W1 ---")
-print(W1)
+lr = 0.1
+losses = []
+for epoch in range(100):
+    z1 = x_train_tensor @ W1 + b1
+    a1 = torch.relu(z1)
+    z2 = a1 @ W2 + b2
+    y_hat = torch.sigmoid(z2)
+  
+    log_y_hat = torch.log(y_hat)
+    log_one_minus_y_hat = torch.log(1 - y_hat)
+  
+    term1 = y_train * log_y_hat
+    term2 = (1 - y_train) * log_one_minus_y_hat
+    bce_per_sample = -(term1 + term2)
+  
+    loss = torch.mean(bce_per_sample)
+    losses.append(loss.item())
+    print("Epoch", epoch, "Loss", loss.item())
 
-print("\n--- b1 ---")
-print(b1)
+    dz2 = (y_hat - y_train)/y_train.shape[0]
+    da1 = dz2 @ W2.T
+    dz1 = da1 * (z1 > 0).float()
 
-print("\n--- W2 ---")
-print(W2)
+    dW2 = a1.T @ dz2
+    db2 = torch.sum(dz2, dim=0)
+    dW1 = x_train_tensor.T @ dz1
+    db1 = torch.sum(dz1, dim=0)
 
-print("\n--- b2 ---")
-print(b2)
-# forward pass
-z1 = x_train_tensor @ W1 + b1
+    W1 = W1 - lr * dW1
+    b1 = b1 - lr * db1
+    W2 = W2 - lr * dW2
+    b2 = b2 - lr * db2
 
-print(z1.shape)
+test_z1 = x_test_tensor @ W1 + b1
+test_a1 = torch.relu(test_z1)
+test_z2 = test_a1 @ W2 + b2
+test_y_hat = torch.sigmoid(test_z2)
 
-a1 = torch.relu(z1)
+pred = (test_y_hat > 0.5).float()
+acc = (pred == y_test).float().mean()
+print("Test acc:", acc.item())
+print(pred.shape)
+print(y_test.shape)
 
-z2 = a1 @ W2 +b2
-
-y_hat = torch.sigmoid(z2)
-# compute bce loss
-log_y_hat = torch.log(y_hat)
-log_one_minus_y_hat = torch.log(1 - y_hat)
-
-
-term1 = y_train * log_y_hat
-term2 = (1 - y_train) * log_one_minus_y_hat
-
-bce_per_sample = -(term1 + term2)
-
-print("bce_per_sample.shape:", bce_per_sample.shape)
-
-
-loss = torch.mean(bce_per_sample)
-print("Final loss:", loss.item())
+plt.plot(losses)
+plt.title("Breast cancer train")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.show()
