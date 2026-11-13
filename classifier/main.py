@@ -64,6 +64,9 @@ def train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100, seed=0, verbose=
     num_features = X_train.shape[1]
     W1, b1, W2, b2 = initialize_parameters(num_features, hidden_units, seed)
 
+    best_loss = float("inf")
+    best_params = None
+    best_epoch = None
     losses = []
     for epoch in range(epochs):
         z1, a1, y_hat = forward(X_train, W1, b1, W2, b2)
@@ -72,6 +75,10 @@ def train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100, seed=0, verbose=
 
         if verbose:
             print("Epoch", epoch, "Loss", loss.item())
+        if loss < best_loss:
+            best_loss = loss.item()
+            best_epoch = epoch+1
+            best_params = {"W1": W1.clone(), "b1": b1.clone(), "W2": W2.clone(), "b2": b2.clone()}
 
         dW1, db1, dW2, db2 = backward(X_train, y_train, W2, z1, a1, y_hat)
         W1 = W1 - lr * dW1
@@ -80,7 +87,7 @@ def train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100, seed=0, verbose=
         b2 = b2 - lr * db2
         
     params = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
-    return params, losses
+    return params, losses, best_epoch, best_loss, best_params
 
 def evaluation(X_test, y_test, params):
     _, _, test_y_hat = forward(X_test, **params)
@@ -93,8 +100,12 @@ def evaluation(X_test, y_test, params):
 
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = data_load()
-    params, losses = train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100)
-    test_acc = evaluation(X_test, y_test, params)
+    params, losses, best_epoch, best_loss, best_params = train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100)
+    test_acc = evaluation(X_test, y_test, best_params)
+
+    print("Checkpoint:")
+    print("Best loss:", best_loss)
+    print("Best epoch", best_epoch)
 
     plt.plot(losses)
     plt.title("Breast cancer train")
