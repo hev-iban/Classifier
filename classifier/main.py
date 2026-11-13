@@ -26,7 +26,7 @@ def data_load(seed=42):
     y_test = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1)
     return x_train_tensor, x_test_tensor, y_train, y_test
 
-def initilize_parameters(num_features, hidden_units = 8, seed=0):
+def initialize_parameters(num_features, hidden_units=8, seed=0):
     torch.manual_seed(seed)
     W1 = torch.randn(num_features, hidden_units) * 0.01
     b1 = torch.zeros(hidden_units)
@@ -37,7 +37,7 @@ def initilize_parameters(num_features, hidden_units = 8, seed=0):
 def forward(X, W1, b1, W2, b2):
     z1 = X @ W1 + b1
     a1 = torch.relu(z1)
-    y_hat = torch.sigmoid(a1 @ W2 +b2)
+    y_hat = torch.sigmoid(a1 @ W2 + b2)
     return z1, a1, y_hat
 
 def bce(y_hat, y, eps=1e-7):
@@ -51,7 +51,7 @@ def bce(y_hat, y, eps=1e-7):
     return loss
 
 def backward(X, y, W2, z1, a1, y_hat):
-    dz2 = (y_hat - y)/y.shape[0]
+    dz2 = (y_hat - y) / y.shape[0]
     da1 = dz2 @ W2.T
     dz1 = da1 * (z1 > 0).float()
     dW2 = a1.T @ dz2
@@ -62,7 +62,7 @@ def backward(X, y, W2, z1, a1, y_hat):
 
 def train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100, seed=0, verbose=True):
     num_features = X_train.shape[1]
-    W1, b1, W2, b2 = initilize_parameters(num_features, hidden_units, seed)
+    W1, b1, W2, b2 = initialize_parameters(num_features, hidden_units, seed)
 
     losses = []
     for epoch in range(epochs):
@@ -82,21 +82,20 @@ def train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100, seed=0, verbose=
     params = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
     return params, losses
 
-def ecvaluation(X_test, y_test, params):
+def evaluation(X_test, y_test, params):
     _, _, test_y_hat = forward(X_test, **params)
 
     pred = (test_y_hat > 0.5).float()
     acc = (pred == y_test).float().mean()
 
     print("Test acc:", acc.item())
-    print(pred.shape)
-    print(y_test.shape)
     return acc.item()
 
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = data_load()
     params, losses = train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100)
-    test_acc = ecvaluation(X_test, y_test, params)
+    test_acc = evaluation(X_test, y_test, params)
+
     plt.plot(losses)
     plt.title("Breast cancer train")
     plt.xlabel("Epoch")
