@@ -20,12 +20,12 @@ def test_gradients_vs_autograd():
     loss_auto = bce(y_hat_auto, y)
     loss_auto.backward()
 
-    assert torch.allclose(dW1, W1_auto.grad, rtol=1e-05, atol=1e-06), f"dW1 mismatch! Max diff: {torch.max(torch.abs(dW1 - W1_auto.grad)).item()}"
-    assert torch.allclose(db1, b1_auto.grad, rtol=1e-05, atol=1e-06), f"db1 mismatch! Max diff: {torch.max(torch.abs(db1 - b1_auto.grad)).item()}"
-    assert torch.allclose(dW2, W2_auto.grad, rtol=1e-05, atol=1e-06), f"dW2 mismatch! Max diff: {torch.max(torch.abs(dW2 - W2_auto.grad)).item()}"
-    assert torch.allclose(db2, b2_auto.grad, rtol=1e-05, atol=1e-06), f"db2 mismatch! Max diff: {torch.max(torch.abs(db2 - b2_auto.grad)).item()}"
+    assert torch.allclose(dW1, W1_auto.grad, rtol=1e-5, atol=1e-8), f"dW1 mismatch! Max diff: {torch.max(torch.abs(dW1 - W1_auto.grad)).item()}"
+    assert torch.allclose(db1, b1_auto.grad, rtol=1e-5, atol=1e-8), f"db1 mismatch! Max diff: {torch.max(torch.abs(db1 - b1_auto.grad)).item()}"
+    assert torch.allclose(dW2, W2_auto.grad, rtol=1e-5, atol=1e-8), f"dW2 mismatch! Max diff: {torch.max(torch.abs(dW2 - W2_auto.grad)).item()}"
+    assert torch.allclose(db2, b2_auto.grad, rtol=1e-5, atol=1e-8), f"db2 mismatch! Max diff: {torch.max(torch.abs(db2 - b2_auto.grad)).item()}"
 
-    print("dW1 close:", torch.allclose(dW1, W1_auto.grad, rtol=1e-05, atol=1e-06))
-    print("db1 close:", torch.allclose(db1, b1_auto.grad, rtol=1e-05, atol=1e-06))
-    print("dW2 close:", torch.allclose(dW2, W2_auto.grad, rtol=1e-05, atol=1e-06))
-    print("db2 close:", torch.allclose(db2, b2_auto.grad, rtol=1e-05, atol=1e-06))
+    print("dW1 close:", torch.allclose(dW1, W1_auto.grad, rtol=1e-5, atol=1e-8))
+    print("db1 close:", torch.allclose(db1, b1_auto.grad, rtol=1e-5, atol=1e-8))
+    print("dW2 close:", torch.allclose(dW2, W2_auto.grad, rtol=1e-5, atol=1e-8))
+    print("db2 close:", torch.allclose(db2, b2_auto.grad, rtol=1e-5, atol=1e-8))
