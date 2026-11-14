@@ -1,0 +1,24 @@
+[project]
+name = "breast-cancer-classifier"
+version = "0.1.0"
+requires-python = "==3.12"
+dependencies = [
+    "torch",
+    "scikit-learn",
+    "numpy",
+    "matplotlib",
+    "pytest",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.reproduce]
+train_smoke = ["-m", "classifier.main", "--train", "--smoke", "--out", "runs/smoke.pt"]
+evaluate = ["-m", "classifier.main", "--evaluate", "--checkpoint", "{checkpoint}", "--metrics-out", "{metrics_out}"]
+split = ["-m", "classifier.main", "--split", "--out", "{split_out}"]
+checkpoint_url = "https://github.com/hev-iban/Classifier/releases/download/1.0.0/model.pt"
+metric_name = "test_accuracy"
+metric_value = 0.9824561476707458
+tolerance = 0.001

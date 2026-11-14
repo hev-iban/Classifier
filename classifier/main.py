@@ -99,16 +99,70 @@ def evaluation(X_test, y_test, params):
     return acc.item()
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = data_load()
-    params, losses, best_epoch, best_loss, best_params = train(X_train, y_train, hidden_units=8, lr=0.1, epochs=100)
-    test_acc = evaluation(X_test, y_test, best_params)
+    import argparse
+    import json
+    from pathlib import Path
 
-    print("Checkpoint:")
-    print("Best loss:", best_loss)
-    print("Best epoch", best_epoch)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--split", action="store_true")
+    parser.add_argument("--train", action="store_true")
+    parser.add_argument("--evaluate", action="store_true")
+    parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--out", type=str)
+    parser.add_argument("--checkpoint", type=str)
+    parser.add_argument("--metrics-out", type=str)
+    args = parser.parse_args()
 
-    plt.plot(losses)
-    plt.title("Breast cancer train")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.show()
+    if args.split:
+        data = load_breast_cancer()
+        indices = np.arange(len(data.target))
+        train_idx, test_idx = train_test_split(indices, test_size=0.2, random_state=42)
+
+        out_path = Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps({
+            "train": train_idx.tolist(),
+            "test": test_idx.tolist(),
+        }, indent=2))
+
+    elif args.train:
+        X_train, _, y_train, _ = data_load()
+        if args.smoke:
+            X_train = X_train[:32]
+            y_train = y_train[:32]
+            epochs = 5
+        else:
+            epochs = 100
+
+        _, _, _, _, best_params = train(
+            X_train, y_train, hidden_units=8, lr=0.1, epochs=epochs, verbose=False
+        )
+        out_path = Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(best_params, out_path)
+
+    elif args.evaluate:
+        _, X_test, _, y_test = data_load()
+        saved_params = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
+        acc = evaluation(X_test, y_test, saved_params)
+
+        out_path = Path(args.metrics_out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps({"test_accuracy": acc}, indent=2))
+
+    else:
+        X_train, X_test, y_train, y_test = data_load()
+        params, losses, best_epoch, best_loss, best_params = train(
+            X_train, y_train, hidden_units=8, lr=0.1, epochs=100
+        )
+        test_acc = evaluation(X_test, y_test, best_params)
+
+        print("Checkpoint:")
+        print("Best loss:", best_loss)
+        print("Best epoch", best_epoch)
+
+        plt.plot(losses)
+        plt.title("By Hand Calculation")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.show()

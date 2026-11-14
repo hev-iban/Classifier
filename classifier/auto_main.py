@@ -29,7 +29,7 @@ class BreastCancerClassifier(nn.Module):
         x = self.sigmoid(x)
         return x
     
-    def train(self, x_train, y_train, epochs):
+    def fit(self, x_train, y_train, epochs):
         losses = []
         for epoch in range(epochs):
             y_pred = self.forward(x_train)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     hidden_size = 8
 
     model = BreastCancerClassifier(input_size, hidden_size)
-    losses = model.train(x_train_tensor, y_train, epochs=100)
+    losses = model.fit(x_train_tensor, y_train, epochs=100)
 
     eval_y_pred = model(x_test_tensor)
     eval_pred = (eval_y_pred > 0.5).float()
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     print("Test acc:", eval_acc.item())
 
     plt.plot(losses)
-    plt.title("Breast cancer train")
+    plt.title("nn.Module Rebuilt")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.show()
